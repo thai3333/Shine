@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Shine Semijoias</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #d39e00;
+        }
+
+        nav {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        nav a {
+            margin: 0 15px;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #fff;
+            background-color: #ff69b4;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #ff1493;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            width: calc(100% - 130px);
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #d39e00;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #c89f00;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        ul li:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-cadastro, .form-pedido {
+            display: none;
+            text-align: center;
+        }
+
+        .avaliacao {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .avaliacao strong {
+            color: #d39e00;
+        }
+
+        .envio {
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .pedido-envio {
+            padding: 10px;
+            background-color: #e9f7e9;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="main-content">
+        <h1>Agenda Shine Semijoias</h1>
+        <nav>
+            <a href="#" onclick="openSection('clientes')">Lista de Clientes</a>
+            <a href="#" onclick="openSection('pedidos')">Pedidos</a>
+            <a href="#" onclick="openSection('pedidosEnviar')">Pedidos a Enviar</a>
+        </nav>
+    </div>
+
+    <!-- Formulário de Cadastro de Cliente -->
+    <div class="form-cadastro" id="form-cadastro">
+        <div class="container">
+            <h1>Cadastro de Cliente</h1>
+            <input type="text" id="nome" placeholder="Nome completo" required>
+            <input type="text" id="cpf" placeholder="CPF" maxlength="11" required>
+            <input type="text" id="contato" placeholder="Contato" maxlength="11" required>
+            <input type="text" id="cep" placeholder="CEP" maxlength="8" required>
+            <input type="number" id="numero" placeholder="Número" required>
+            <button onclick="submitCadastro()">Cadastrar</button>
+            <button onclick="close('clientes')">Voltar</button>
+        </div>
+    </div>
+
+    <!-- Formulário de Cadastro de Pedido -->
+    <div class="form-pedido" id="form-pedido">
+        <div class="container">
+            <h1>Cadastro de Pedido</h1>
+            <input type="text" id="descricao" placeholder="Descrição do Pedido" required>
+            <input type="number" id="valor" placeholder="Valor do Pedido" required>
+            <button onclick="submitPedido()">Registrar Pedido</button>
+            <button onclick="close('pedidos')">Voltar</button>
+        </div>
+    </div>
+
+    <script>
+        // Função para abrir diferentes seções
+        function openSection(section) {
+            let content = '';
+            switch (section) {
+                case 'clientes':
+                    loadClientes();
+                    break;
+                case 'pedidos':
+                    loadPedidos();
+                    break;
+                case 'pedidosEnviar':
+                    loadPedidosEnviar();
+                    break;
+            }
+        }
+
+        // Função para carregar a lista de clientes
+        function loadClientes() {
+            let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+            let clientListHtml = `
+                <div class="container">
+                    <h1>Lista de Clientes</h1>
+                    <ul id="client-list">
+            `;
+            
+            if (clientes.length === 0) {
+                clientListHtml += '<li>Não há clientes cadastrados.</li>';
+            } else {
+                clientes.forEach(cliente => {
+                    clientListHtml += `
+                        <li>${cliente.nome} - CPF: ${cliente.cpf}</li>
+                    `;
+                });
+            }
+
+            clientListHtml += `
+                </ul>
+                <button onclick="openCadastro()">Cadastrar Cliente</button>
+                <button onclick="close('clientes')">Voltar</button>
+            </div>
+            `;
+
+            document.getElementById('main-content').innerHTML = clientListHtml;
+        }
+
+        // Função para carregar a lista de pedidos
+        function loadPedidos() {
+            let pedidos = [
+                { id: 1, descricao: 'Colar de Pérolas', valor: 120.00, cliente: 'Maria Oliveira', avaliacao: 'Produto maravilhoso, chegou no prazo!' },
+                { id: 2, descricao: 'Anel de Ouro', valor: 250.00, cliente: 'João Santos', avaliacao: 'Amei o anel! Super recomendaria.' },
+                { id: 3, descricao: 'Brinco de Diamante', valor: 350.00, cliente: 'Ana Souza', avaliacao: 'Perfeito! Exatamente o que eu queria.' }
+            ];
+            let pedidoListHtml = `
+                <div class="container">
+                    <h1>Lista de Pedidos</h1>
+                    <ul id="order-list">
+            `;
+            
+            if (pedidos.length === 0) {
+                pedidoListHtml += '<li>Não há pedidos registrados.</li>';
+            } else {
+                pedidos.forEach(pedido => {
+                    pedidoListHtml += `
+                        <li>
+                            Pedido #${pedido.id}: ${pedido.descricao} - R$ ${pedido.valor}
+                            <div class="status-buttons">
+                                <button onclick="verAvaliacao(${pedido.id})">Ver Avaliação</button>
+                            </div>
+                        </li>
+                    `;
+                });
+            }
+
+            pedidoListHtml += `
+                </ul>
+                <button onclick="openPedido()">Registrar Novo Pedido</button>
+                <button onclick="close('pedidos')">Voltar</button>
+            </div>
+            `;
+
+            document.getElementById('main-content').innerHTML = pedidoListHtml;
+        }
+
+        // Função para carregar os pedidos que estão aguardando envio
+        function loadPedidosEnviar() {
+            let pedidosEnviar = [
+                { id: 1, descricao: 'Colar de Pérolas', valor: 120.00, cliente: 'Maria Oliveira', endereco: 'Rua ABC, 123' },
+                { id: 2, descricao: 'Anel de Ouro', valor: 250.00, cliente: 'João Santos', endereco: 'Rua XYZ, 456' }
+            ];
+            let pedidosEnviarHtml = `
+                <div class="container">
+                    <h1>Pedidos a Enviar</h1>
+                    <ul id="order-list">
+            `;
+            
+            if (pedidosEnviar.length === 0) {
+                pedidosEnviarHtml += '<li>Não há pedidos para enviar.</li>';
+            } else {
+                pedidosEnviar.forEach(pedido => {
+                    pedidosEnviarHtml += `
+                        <li class="pedido-envio">
+                            Pedido #${pedido.id}: ${pedido.descricao} - R$ ${pedido.valor}
+                            <div><strong>Cliente:</strong> ${pedido.cliente}</div>
+                            <div><strong>Endereço:</strong> ${pedido.endereco}</div>
+                            <button onclick="marcarComoEnviado(${pedido.id})">Marcar como Enviado</button>
+                        </li>
+                    `;
+                });
+            }
+
+            pedidosEnviarHtml += `
+                </ul>
+                <button onclick="close('pedidosEnviar')">Voltar</button>
+            </div>
+            `;
+
+            document.getElementById('main-content').innerHTML = pedidosEnviarHtml;
+        }
+
+        // Função para marcar pedido como enviado
+        function marcarComoEnviado(pedidoId) {
+            alert(`Pedido #${pedidoId} marcado como enviado.`);
+        }
+
+        // Função para visualizar avaliação
+        function verAvaliacao(pedidoId) {
+            let avaliacaoHtml = `
+                <div class="container">
+                    <h1>Avaliação do Pedido #${pedidoId}</h1>
+                    <div class="avaliacao">
+                        <strong>Maria Oliveira</strong><br>
+                        "Produto maravilhoso, chegou no prazo!"
+                    </div>
+                    <button onclick="close('pedidos')">Fechar Avaliação</button>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = avaliacaoHtml;
+        }
+
+        // Função para abrir o formulário de cadastro de cliente
+        function openCadastro() {
+            document.getElementById("form-cadastro").style.display = 'block';
+            document.getElementById("main-content").style.display = 'none';
+        }
+
+        // Função para abrir o formulário de cadastro de pedido
+        function openPedido() {
+            document.getElementById("form-pedido").style.display = 'block';
+            document.getElementById("main-content").style.display = 'none';
+        }
+
+        // Função para fechar qualquer seção e voltar à lista específica
+        function close(section) {
+            document.getElementById("form-cadastro").style.display = 'none';
+            document.getElementById("form-pedido").style.display = 'none';
+            if (section === 'clientes') loadClientes();
+            if (section === 'pedidos') loadPedidos();
+            if (section === 'pedidosEnviar') loadPedidosEnviar();
+        }
+
+        // Função para cadastrar um cliente
+        function submitCadastro() {
+            const nome = document.getElementById('nome').value;
+            const cpf = document.getElementById('cpf').value;
+            const contato = document.getElementById('contato').value;
+            const cep = document.getElementById('cep').value;
+            const numero = document.getElementById('numero').value;
+
+            if (nome && cpf && contato && cep && numero) {
+                const novoCliente = { nome, cpf, contato, cep, numero };
+                let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+                clientes.push(novoCliente);
+                localStorage.setItem('clientes', JSON.stringify(clientes));
+
+                alert(`Cliente ${nome} cadastrado com sucesso!`);
+                close('clientes');
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        }
+
+        // Função para registrar um pedido
+        function submitPedido() {
+            const descricao = document.getElementById('descricao').value;
+            const valor = document.getElementById('valor').value;
+
+            if (descricao && valor) {
+                const novoPedido = { id: Date.now(), descricao, valor };
+                let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+                pedidos.push(novoPedido);
+                localStorage.setItem('pedidos', JSON.stringify(pedidos));
+
+                alert(`Pedido "${descricao}" registrado com sucesso!`);
+                close('pedidos');
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        }
+    </script>
+</body>
+</html>
